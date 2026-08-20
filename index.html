@@ -266,6 +266,57 @@ body.is-conn .brand { color:#fff; background:#c81e2a; border-color:#c81e2a; }
 /* Mechanical keyboard icon in device list */
 .kb-icon { flex-shrink:0; opacity:.85; color:var(--ok); }
 
+/* 單色／多色的滑動開關 */
+.sw-toggle {
+  flex:0 0 auto; width:34px; height:19px; padding:0; cursor:pointer;
+  position:relative; border:none; border-radius:10px;
+  background:var(--border); transition:background .16s;
+}
+.sw-toggle .sw-knob {
+  position:absolute; top:2px; left:2px; width:15px; height:15px;
+  border-radius:50%; background:#fff; transition:left .16s;
+  box-shadow:0 1px 3px rgba(0,0,0,.35);
+}
+.sw-toggle.on { background:var(--ok, #22c55e); }
+.sw-toggle.on .sw-knob { left:17px; }
+.sw-lbl { font-size:11px; color:var(--muted); flex:0 0 auto; }
+/* 目前顏色的方塊（點了展開／收折內嵌色輪）*/
+.rgb-sw {
+  width:30px; height:22px; padding:0; flex:0 0 auto; cursor:pointer;
+  border:1px solid var(--border); border-radius:5px;
+}
+.rgb-sw.open { border-color:var(--accent); box-shadow:0 0 0 2px var(--acc-dim); }
+/* 內嵌的色輪面板（不是跳出視窗）*/
+.cw-panel {
+  margin-top:8px; padding:10px; border-radius:9px;
+  background:var(--inp); border:1px solid var(--border);
+}
+.cw-wrap { display:flex; gap:12px; align-items:center; }
+.cw-svg  { display:block; cursor:pointer; }
+.cw-svg path:hover, .cw-svg circle:hover { stroke:var(--text); stroke-width:1.5; }
+.cw-side { display:flex; flex-direction:column; gap:8px; flex:1; min-width:0; }
+.cw-fields { display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:11px;
+             color:var(--muted); }
+.cw-fields label { display:flex; align-items:center; gap:3px; }
+.cw-fields .timing-inp { width:46px; }
+.cw-tip { font-size:11px; color:var(--muted); line-height:1.5; }
+/* RGB 色盤與「實際會亮出來的顏色」預覽點。
+ * <input type="color"> 各家瀏覽器預設外觀差很多，統一成小方塊。 */
+.rgb-pick {
+  width:34px; height:22px; padding:0; border:1px solid var(--border);
+  border-radius:5px; background:var(--inp); cursor:pointer; flex:0 0 auto;
+}
+.rgb-pick::-webkit-color-swatch-wrapper { padding:2px; }
+.rgb-pick::-webkit-color-swatch { border:none; border-radius:3px; }
+/* ★ 預覽點：低亮度時本來就會接近黑色（5% 的白就是深灰）。
+ * 使用者回報「其他欄都是壞的」，實際上顯示是對的 —— 問題是一顆深灰
+ * 小圓點看起來像壞掉的元件。所以加上外框與底色，讓它讀起來像
+ * 「一顆暗著的燈」，而不是「沒有內容」。tooltip 也會寫出實際色碼。 */
+.rgb-dot {
+  width:15px; height:15px; border-radius:50%; flex:0 0 auto;
+  border:1px solid var(--border-strong, rgba(255,255,255,.28));
+  margin-left:auto; outline:2px solid var(--card); outline-offset:-3px;
+}
 /* 小型數字輸入框（連按次數、LED 次數/毫秒、動作間延遲）。
  * 名字留著 .timing-inp 是歷史原因 —— 它原本只給已移除的「自訂秒數」用。 */
 .timing-inp {
@@ -887,6 +938,16 @@ const STR = {
     k_left      : '← 左',
     k_right     : '→ 右',
     k_menu      : 'Menu（右鍵選單）',
+    rgb_color   : 'RGB 顏色',
+    rgb_multi   : '多色',
+    rgb_mono    : '單色',
+    rgb_mode_hint : '切換單色／多色。單色＝只亮單色 LED；多色＝同時亮 RGB LED',
+    rgb_wheel_tip : '點色輪選色（選完自動收折），或直接輸入 R/G/B 與 HEX。',
+
+    busy_give_up: '總線持續忙碌，放棄（請放開按鍵後再按一次套用）',
+    rgb_bri     : '亮度',
+    rgb_hint    : '這個按法亮燈時 RGB LED 顯示的顏色',
+    rgb_preview : '實際會亮出來的顏色 %s（已套用亮度；亮度低時本來就會接近黑色）',
     key_max     : '一次最多 %d 個主鍵（HID 鍵盤報告只有 6 個鍵位）',
     gap_hint    : '→ 到下一步實際約 %t ms（這個動作本身 %s ms ＋ 延遲 %d ms%b）',
     gap_bus     : ' ＋ 串接傳輸 %b ms',
@@ -1042,6 +1103,16 @@ const STR = {
     k_left      : '← Left',
     k_right     : '→ Right',
     k_menu      : 'Menu (Context Menu)',
+    rgb_color   : 'RGB colour',
+    rgb_multi   : 'Colour',
+    rgb_mono    : 'Mono',
+    rgb_mode_hint : 'Switch mono / colour. Mono = single-colour LED only; colour = also the RGB LED',
+    rgb_wheel_tip : 'Click the wheel to pick a colour (it closes itself), or type R/G/B or HEX.',
+
+    busy_give_up: 'Bus stayed busy, gave up (release the key and press Apply again)',
+    rgb_bri     : 'Brightness',
+    rgb_hint    : 'Colour the RGB LED shows for this press type',
+    rgb_preview : 'Actual colour that will light up: %s (brightness applied; it is meant to look near-black at low brightness)',
     key_max     : 'Up to %d main keys at once (a HID keyboard report has only 6 key slots)',
     gap_hint    : '→ about %t ms until the next step (%s ms for this action + %d ms delay%b)',
     gap_bus     : ' + %b ms bus transfer',
@@ -1409,6 +1480,68 @@ function setConn(ok) {
    press: 'single' | 'double' | 'long' | 'custom'
    ──────────────────────────────────────────────────────────── */
 function newAction(){ return {type:ACT_STR, str:'', key:0, mod:0, delay:0}; }
+/* ══════════════════════════════════════════════════════════════
+   RGB 指示燈（WS2812，接在 P1.1）
+   ──────────────────────────────────────────────────────────────
+   顏色是【每個按法欄各自一份】—— 和 ledMode / ledTimes / ledMs 同一層，
+   所以可以做到「按一下綠、按兩下藍、長按紅」。
+
+   封包用 RGB565 塞進 p[4..5]（原本 timingMs 留下的 reserved 兩個位元組），
+   所以 62 bytes 的封包格式完全沒動。
+
+   ★ 亮度在【網頁端】就先乘進去，送出去的已經是最終值 ——
+     8051 沒有硬體乘法，在韌體做亮度縮放要連進乘法例程（要花 ROM）。
+     這裡乘一次是零成本。
+   ★ 預設亮度刻意只有 25%：WS2812 全亮非常刺眼，而這是指示燈不是照明。
+   ══════════════════════════════════════════════════════════════ */
+/* ★ 預設是【純綠】。原本是 {0,255,80}（#00FF50，青綠色）——
+ * 使用者回報「按鍵一的綠色混了白光」，而那顆板子用的就是這個預設值：
+ * b=80 是真的有藍光，不是傳輸壞掉。預設值不該是個「看起來像純色但不是」
+ * 的顏色，而且新增的 HEX 欄位會讓實際值一眼看得到。 */
+const RGB_DEF   = { r:0, g:255, b:0 };
+const RGB_BRI_DEF = 60;                   /* 預設亮度 %（1~100）—— gamma 修正後要調高 */
+
+/* ══════════════════════════════════════════════════════════════
+   ★ gamma 修正 —— 「設橘色卻亮成黃色」的原因
+   ──────────────────────────────────────────────────────────────
+   色盤給的是 sRGB（已經做過 gamma 編碼的值），而 WS2812 的 PWM 是
+   【線性光】。直接把 sRGB 數值餵進去，中間調就會過亮。
+
+   實際案例：橘色 #FF8000 → R:G = 255:128 = 2:1。直接送過去，
+   LED 兩個晶粒的【光輸出】比也是 2:1 —— 但綠色晶粒的發光效率遠高於
+   紅色，加上人眼對綠最敏感，看起來就變成黃色。
+
+   正確做法是先把 sRGB 轉成線性光：
+       linear = 255 × (sRGB/255)^2.2
+   橘色變成 R:G = 255:53 ≈ 4.8:1，看起來才是橘色。
+
+   ⚠ gamma 會讓整體變暗（中間調掉得最多），所以預設亮度從 25% 提到 60%。
+   ══════════════════════════════════════════════════════════════ */
+const GAMMA = 2.2;
+function srgbToLinear(v){
+  return Math.round(255 * Math.pow(Math.max(0, Math.min(255, v)) / 255, GAMMA));
+}
+
+/* {r,g,b} 0~255 (sRGB) + 亮度% → RGB565 的兩個位元組（小端，對應 p[4]/p[5]）
+ * 順序：sRGB → 線性光 → 乘亮度（亮度本來就是線性的光輸出比例）→ 量化成 565 */
+function rgbPack(c, bri){
+  const k = Math.max(0, Math.min(100, bri===undefined?RGB_BRI_DEF:bri)) / 100;
+  const ch = (v) => Math.round(srgbToLinear(v) * k);
+  const r = ch(c&&c.r||0), g = ch(c&&c.g||0), b = ch(c&&c.b||0);
+  const v = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
+  return [v & 0xFF, (v >> 8) & 0xFF];
+}
+/* #rrggbb ↔ {r,g,b}（<input type="color"> 用的格式）*/
+function rgbToHex(c){
+  const h = n => ('0' + Math.max(0,Math.min(255,n|0)).toString(16)).slice(-2);
+  return '#' + h(c&&c.r||0) + h(c&&c.g||0) + h(c&&c.b||0);
+}
+function hexToRgb(s){
+  const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(s||''));
+  return m ? { r:parseInt(m[1],16), g:parseInt(m[2],16), b:parseInt(m[3],16) }
+           : { r:RGB_DEF.r, g:RGB_DEF.g, b:RGB_DEF.b };
+}
+
 /* LED 模式：0=關閉 1=閃燈N次 2=恆亮Xms 3=呼吸燈Xms */
 const LED_OFF=0, LED_BLINK=1, LED_SOLID=2;
 /* ★ LED_BREATH(3) 已從 UI 移除 —— 韌體是 USE_BREATHE=0，選了會落到預設分支
@@ -1424,7 +1557,7 @@ const LED_BREATH_LEGACY = 3;
 
    CFG_LIMIT：DataFlash 只有 124 bytes 給設定，佈局與 saveConfig() 一致：
      byte 0  = FLASH_MAGIC，byte 1 = nCols
-     每欄    = 7 B（press,count,ledMode,ledTimes,ledMs16,nActions）
+     每欄    = 9 B（press,count,ledMode,ledTimes,ledMs16,rgb565_16,nActions）
      每動作  = 6 B + 字串位元組數（type,mod,key,delay16,strLen + str）
 
    ★ 欄頭原本是 9 B —— 其中 2 B 是 timingMs，而韌體執行時從來沒讀它。
@@ -1469,7 +1602,7 @@ const BUS_FETCH_MS = 65;
 /* ★ 抽成常數：原本 9 和 6 分別寫死在 cfgBytes、ADD_COL_COST、ADD_ACT_COST
  * 三處。欄頭從 9 改 7 時漏改任何一處，網頁算出的容量就和韌體不一致 ——
  * 症狀是「套用回報成功但設定被靜默截斷」，最難查的那種。 */
-const COL_HEAD_BYTES = 7;   // saveConfig 每欄的固定開銷
+const COL_HEAD_BYTES = 9;   // saveConfig 每欄的固定開銷（含 2 bytes 的 RGB565 顏色）
 const ACT_HEAD_BYTES = 6;   // saveConfig 每動作的固定開銷（不含字串）
 
 /* 一份設定寫進 DataFlash 會佔幾個位元組（與 saveConfig 同一套算法） */
@@ -1564,7 +1697,9 @@ function newCol(press){
   press = press || 'single';
   const count  = press==='custom' ? 3 : (press==='double' ? 2 : 1);
   return { press, count, actions:[ newAction() ],
-           ledMode:LED_BLINK, ledTimes:1, ledMs:500 };
+           ledMode:LED_BLINK, ledTimes:1, ledMs:500,
+           rgbOn:true,
+           rgb:{ r:RGB_DEF.r, g:RGB_DEF.g, b:RGB_DEF.b }, bri:RGB_BRI_DEF };
 }
 function mkCfg(){ return [ newCol('single') ]; }
 function cloneCfg(cfg){
@@ -1576,6 +1711,14 @@ function cloneCfg(cfg){
     ledMode:(c.ledMode===undefined || c.ledMode===LED_BREATH_LEGACY)
               ? LED_BLINK : c.ledMode,
     ledTimes:(c.ledTimes||1), ledMs:(c.ledMs||500),
+    /* ★ 顏色與亮度也要進快照，否則「改了顏色」不會亮綠燈 ——
+     * 和延遲欄位當初一樣的坑（快照漏欄位＝那個欄位的修改看不見）。
+     * 舊的 localStorage 設定沒有這兩個欄位，補上預設值。 */
+    rgb: c.rgb ? { r:c.rgb.r|0, g:c.rgb.g|0, b:c.rgb.b|0 }
+               : { r:RGB_DEF.r, g:RGB_DEF.g, b:RGB_DEF.b },
+    bri: (c.bri===undefined ? RGB_BRI_DEF : c.bri),
+    /* 單色／多色的切換。舊設定沒有這個欄位 → 當成多色（既有行為不變）。 */
+    rgbOn: (c.rgbOn===undefined ? true : !!c.rgbOn),
     actions:c.actions.map(cpSlot) }));
 }
 /* migrate old 3-slot data → column model */
@@ -2334,7 +2477,12 @@ async function sendPkt(p, tag){
     if(attempt === 0) logScan('總線忙（有按鍵事件待處理）→ 自動重試：' + tag);
     await new Promise(res=>setTimeout(res, 300));
   }
-  logScan(APPLY_FAIL + '總線持續忙碌，放棄：' + tag);
+  /* ★ 訊息要講「該怎麼辦」。原本只寫「持續忙碌，放棄」，使用者不知道
+   * 那是自己手還按在按鍵上造成的。
+   * （為什麼不自動解決：從控要等主控把事件取走才會放開 ALERT#，而主控在
+   *   處理設定封包時 busDrainEvents 會因為 cfgPending 而直接 return ——
+   *   要繞過那個保護才行，風險比這個情境的價值高。所以選擇講清楚。） */
+  logScan(APPLY_FAIL + T('busy_give_up') + '：' + tag);
   return { ok:false, busy:true };
 }
 
@@ -2363,11 +2511,15 @@ async function writeDev(addr,cfg,boardId){
       p[1]=ci;
       p[2]=PRESS_CODE[col.press]??0;
       p[3]=count;
-      /* [4..5] reserved：原本是「自訂秒數」。韌體從來沒讀它（連擊視窗與
-       * 長按門檻都是寫死的 MULTI_TICKS / LONG_TICKS），UI 已移除該欄位。
-       * ⚠ 兩個位元組【保留不刪】—— 刪了會讓後面所有欄位往前位移，
-       *   新網頁配舊韌體就會把 actIndex 當成 timing 高位元組來解讀。 */
-      p[4]=0; p[5]=0;
+      /* ★ [4..5] = RGB565 顏色（亮度已經乘進去）。
+       * 這兩個位元組原本是「自訂秒數」的 timingMs，那個功能移除後留成
+       * reserved —— 現在正好給 RGB 用，所以 62 bytes 的封包格式從頭到尾
+       * 沒有變過。韌體端見 Column.rgb565。 */
+      /* ★ 單色模式就送 0 —— 韌體的 rgbWrite(0) 就是全黑（RGB 不亮），
+       * 所以「單色／多色」不需要額外的位元組、不動 DataFlash 佈局、
+       * 也不必再換 FLASH_MAGIC。P3.2 那顆單色燈兩種模式都照亮。 */
+      { const rp = (col.rgbOn===false) ? [0,0] : rgbPack(col.rgb, col.bri);
+        p[4]=rp[0]; p[5]=rp[1]; }
       p[6]=ai;
       p[7]=a.type||0; p[8]=a.mod||0; p[9]=a.key||0;
       const d=a.delay||0; p[10]=d&0xff; p[11]=(d>>8)&0xff;
@@ -2674,6 +2826,174 @@ function setLedMode(ci,m){ edit[ci].ledMode=m; renderCfg(); }
 function setLedTimes(ci,v){ edit[ci].ledTimes=Math.max(1,Math.min(20,parseInt(v)||1)); syncDirtyUI(); }
 function setLedMs(ci,v){ edit[ci].ledMs=Math.max(50,Math.min(9999,parseInt(v)||500)); syncDirtyUI(); }
 
+/* ★ RGB 的兩個 setter 一樣要呼叫 syncDirtyUI（見 setDelay 上方的說明）——
+ * 改顏色不重繪整個面板（會讓色盤失焦），所以只更新提示與套用按鈕。
+ * 預覽點要自己更新，因為它不在重繪範圍內。 */
+function setRgb(ci,hex){
+  edit[ci].rgb = hexToRgb(hex);
+  refreshRgbDot(ci);
+  syncDirtyUI();
+}
+function setBri(ci,v){
+  edit[ci].bri = Math.max(1, Math.min(100, parseInt(v)||RGB_BRI_DEF));
+  refreshRgbDot(ci);
+  syncDirtyUI();
+}
+/* 預覽點顯示的是【眼睛看到的樣子】，不是送出去的數值。
+ * ★ 用 k^(1/2.2) 而不是 k：LED 的光輸出是線性的 k 倍，但螢幕是 sRGB，
+ *   要換算回 sRGB 才能讓預覽和實物看起來一致。
+ *   （直接乘 k 的話預覽會比實物暗很多，60% 看起來像 20%。） */
+function rgbScaled(c, bri){
+  const k = Math.max(0,Math.min(100, bri===undefined?RGB_BRI_DEF:bri))/100;
+  const p = Math.pow(k, 1/GAMMA);
+  return { r:Math.round((c&&c.r||0)*p), g:Math.round((c&&c.g||0)*p), b:Math.round((c&&c.b||0)*p) };
+}
+function refreshRgbDot(ci){
+  const col = document.getElementById('pc'+ci);
+  const dot = col && col.querySelector('.rgb-dot');
+  if(dot) dot.style.background = rgbToHex(rgbScaled(edit[ci].rgb, edit[ci].bri));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   顏色對話框：色輪 + RGB 數值 + HEX
+   ──────────────────────────────────────────────────────────────
+   為什麼做成對話框而不是直接放在按法欄裡：按法欄很窄（四欄並排），
+   色輪 + 三個 RGB 欄位 + HEX 欄位塞不進去。和組合鍵挑選器一樣的做法。
+
+   色輪 = 12 個色相 × 5 圈明度，最外圈全飽和、往內漸漸混白、圓心純白。
+   用 SVG 的環形扇形路徑產生，每一塊都可以點。
+   ══════════════════════════════════════════════════════════════ */
+const WHEEL_HUES = 12, WHEEL_RINGS = 5;
+
+/* HSV(h 0~360, s=1, v=1) → RGB。只需要 s=v=1 的情形，所以寫得很短。
+ * ⚠ 公式是 1 − clamp(min(k, 4−k, 1))，那個「1 −」不能漏 ——
+ *   漏掉的話整個色輪會反相（色相 0 變成青色而不是紅色）。
+ *   我第一版就漏了，靠 wheelColor(0,0) 應該是 #ff0000 這個檢查抓到的。 */
+function hueToRgb(h){
+  const c = (n) => {
+    const k = ((h/60) + n) % 6;
+    return Math.round(255 * (1 - Math.max(0, Math.min(k, 4-k, 1))));
+  };
+  return { r:c(5), g:c(3), b:c(1) };
+}
+/* 往白色混：t=0 原色、t=1 純白 */
+function tint(c, t){
+  return { r:Math.round(c.r+(255-c.r)*t),
+           g:Math.round(c.g+(255-c.g)*t),
+           b:Math.round(c.b+(255-c.b)*t) };
+}
+/* 色輪上第 (hi, ri) 塊的顏色。ri=0 是最外圈（全飽和）。 */
+function wheelColor(hi, ri){
+  return tint(hueToRgb(hi * (360/WHEEL_HUES)), ri / WHEEL_RINGS);
+}
+
+/* 環形扇形的 SVG path */
+function arcPath(cx, cy, r0, r1, a0, a1){
+  const P = (r,a)=>[cx + r*Math.cos(a), cy + r*Math.sin(a)];
+  const [x0,y0]=P(r1,a0), [x1,y1]=P(r1,a1), [x2,y2]=P(r0,a1), [x3,y3]=P(r0,a0);
+  const f = (n)=>n.toFixed(2);
+  return `M${f(x0)},${f(y0)} A${f(r1)},${f(r1)} 0 0 1 ${f(x1)},${f(y1)}`
+       + ` L${f(x2)},${f(y2)} A${f(r0)},${f(r0)} 0 0 0 ${f(x3)},${f(y3)} Z`;
+}
+
+function wheelSvg(){
+  /* ★ 中央白色圓縮小（0.30 → 0.16）。原本佔掉將近三分之一半徑，
+   * 色環被壓得很細。縮小之後每一圈都更寬、更好點。 */
+  const S=132, c=S/2, rMax=c-2, rMin=rMax*0.16;
+  const step=(Math.PI*2)/WHEEL_HUES, half=step/2;
+  let out=`<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" class="cw-svg">`;
+  for(let ri=WHEEL_RINGS-1; ri>=0; ri--){
+    const r1 = rMin + (rMax-rMin)*(WHEEL_RINGS-ri)/WHEEL_RINGS;
+    const r0 = rMin + (rMax-rMin)*(WHEEL_RINGS-ri-1)/WHEEL_RINGS;
+    for(let hi=0; hi<WHEEL_HUES; hi++){
+      const a0 = hi*step - half - Math.PI/2, a1 = a0 + step;
+      const col = wheelColor(hi, ri);
+      out += `<path d="${arcPath(c,c,r0,r1,a0,a1)}" fill="${rgbToHex(col)}"`
+           + ` onclick="pickWheel(${col.r},${col.g},${col.b})"/>`;
+    }
+  }
+  /* 圓心純白 */
+  out += `<circle cx="${c}" cy="${c}" r="${rMin.toFixed(2)}" fill="#ffffff"`
+       + ` onclick="pickWheel(255,255,255)"/>`;
+  return out + '</svg>';
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ★ 顏色挑選器改成【內嵌折疊】，不是跳出對話框
+   ──────────────────────────────────────────────────────────────
+   原本做成 modal 的理由是「按法欄很窄，塞不進去」。但跳出視窗會遮住
+   其他欄，調色時看不到旁邊在幹什麼 —— 改回內嵌，點色塊展開、
+   在色輪上選好顏色就自動收折。
+
+   ⚠ 只有【點色輪】會自動收折。R/G/B 與 HEX 欄位打字時不能收折，
+     也不能重繪（會失焦，色碼打不完）—— 那兩種輸入走 syncColorFields()
+     只更新受影響的節點，和 setStr / setDelay 同一套做法。
+   ══════════════════════════════════════════════════════════════ */
+let pickOpen = null;              /* 目前展開的是哪一欄（null = 全收折）*/
+let colTmp   = { r:0, g:255, b:0 };
+
+function togglePick(ci){
+  pickOpen = (pickOpen === ci) ? null : ci;
+  if(pickOpen !== null){
+    const c = edit[ci].rgb || RGB_DEF;
+    colTmp = { r:c.r|0, g:c.g|0, b:c.b|0 };
+  }
+  renderCfg();
+}
+
+/* 色輪、三個數值欄、HEX 欄共用同一份 colTmp。
+ * skip = 正在打字的那個欄位 id，不要回寫它（會跳游標）。 */
+function syncColorFields(skip){
+  const set=(id,v)=>{ const el=document.getElementById(id); if(el && skip!==id) el.value=v; };
+  set('cR', colTmp.r); set('cG', colTmp.g); set('cB', colTmp.b);
+  set('cHex', rgbToHex(colTmp).toUpperCase());
+  if(pickOpen === null) return;
+  /* 即時把顏色寫回設定 —— 內嵌模式沒有「確認」按鈕，所見即所得。 */
+  edit[pickOpen].rgb  = { r:colTmp.r, g:colTmp.g, b:colTmp.b };
+  edit[pickOpen].rgbOn = true;
+  const bri = (edit[pickOpen].bri===undefined) ? RGB_BRI_DEF : edit[pickOpen].bri;
+  const sw = document.getElementById('sw'+pickOpen);
+  if(sw) sw.style.background = rgbToHex(colTmp);
+  const dot = document.getElementById('dot'+pickOpen);
+  if(dot) dot.style.background = rgbToHex(rgbScaled(colTmp, bri));
+  const bulb = document.getElementById('bulb'+pickOpen);
+  if(bulb) bulb.style.color = rgbToHex(colTmp);
+  syncDirtyUI();
+}
+/* 點色輪 → 設定顏色並自動收折 */
+function pickWheel(r,g,b){
+  colTmp={r,g,b};
+  syncColorFields();
+  pickOpen = null;
+  renderCfg();
+}
+function setColNum(ch, el){
+  colTmp[ch] = Math.max(0, Math.min(255, parseInt(el.value)||0));
+  syncColorFields('c'+ch.toUpperCase());
+}
+function setColHex(el){
+  /* 邊打邊解析：不足 6 碼就先不動（否則 #0 會被當成黑色把數值欄清掉）*/
+  const t = String(el.value||'').trim();
+  if(!/^#?[0-9a-f]{6}$/i.test(t)) return;
+  colTmp = hexToRgb(t);
+  syncColorFields('cHex');
+}
+/* 單色 ↔ 多色。單色不是「關掉燈」—— P3.2 那顆照亮，只是 RGB 不亮。 */
+function toggleRgbOn(ci){
+  edit[ci].rgbOn = (edit[ci].rgbOn===false);
+  if(edit[ci].rgbOn===false && pickOpen===ci) pickOpen = null;
+  renderCfg();
+}
+
+/* 單色／多色的滑動開關（使用者要求換掉原本的燈泡圖示）。
+ * 純 CSS，不用 SVG —— 開關本體就是一顆圓角矩形加一個會滑動的圓點。 */
+function switchHtml(ci, on){
+  return `<button class="sw-toggle${on?' on':''}" onclick="toggleRgbOn(${ci})"
+        role="switch" aria-checked="${on?'true':'false'}"
+        title="${A(T('rgb_mode_hint'))}"><span class="sw-knob"></span></button>
+      <span class="sw-lbl">${on ? T('rgb_multi') : T('rgb_mono')}</span>`;
+}
+
 /* 該按法的 LED 區塊（放在每個按法欄的下方） */
 function renderLedBlock(ci){
   const c=edit[ci];
@@ -2693,6 +3013,47 @@ function renderLedBlock(ci){
              <span class="timing-unit">ms</span>
            </span>`;
   }
+  /* RGB 只有在燈會亮的時候才有意義 —— LED_OFF 就不顯示，
+   * 免得使用者調了顏色卻發現燈根本不亮。 */
+  const rgb = c.rgb || RGB_DEF;
+  const bri = (c.bri===undefined) ? RGB_BRI_DEF : c.bri;
+  const on  = (c.rgbOn !== false);
+  const open = (pickOpen === ci) && on;
+  /* ★ 燈泡圖示【本身】就是單色／多色的切換鈕，而且圖示會跟著變：
+   *   多色 = 實心並染上目前的顏色（有光線）、單色 = 空心灰。 */
+  const rgbRow = (m===LED_OFF) ? '' : `
+      <div class="led-row" style="margin-top:6px">
+        ${switchHtml(ci, on)}
+        ${on ? `
+        <button class="rgb-sw${open?' open':''}" id="sw${ci}" onclick="togglePick(${ci})"
+                title="${A(T('rgb_hint'))}" style="background:${rgbToHex(rgb)}"></button>
+        <input class="timing-inp" style="width:50px" type="number" min="1" max="100"
+               value="${bri}" oninput="setBri(${ci},this.value)" title="${A(T('rgb_bri'))}">
+        <span class="timing-unit">%</span>
+        <span class="rgb-dot" id="dot${ci}" style="background:${rgbToHex(rgbScaled(rgb,bri))}"
+              title="${A(T('rgb_preview').replace('%s', rgbToHex(rgbScaled(rgb,bri)).toUpperCase()))}"></span>` : ''}
+      </div>
+      ${open ? `
+      <div class="cw-panel">
+        <div class="cw-wrap">
+          <div>${wheelSvg()}</div>
+          <div class="cw-side">
+            <div class="cw-fields">
+              <label>R<input class="timing-inp" id="cR" type="number" min="0" max="255"
+                             value="${colTmp.r}" oninput="setColNum('r',this)"></label>
+              <label>G<input class="timing-inp" id="cG" type="number" min="0" max="255"
+                             value="${colTmp.g}" oninput="setColNum('g',this)"></label>
+              <label>B<input class="timing-inp" id="cB" type="number" min="0" max="255"
+                             value="${colTmp.b}" oninput="setColNum('b',this)"></label>
+              <label>HEX<input class="timing-inp" id="cHex" style="width:74px;text-align:left"
+                               maxlength="7" spellcheck="false"
+                               value="${rgbToHex(colTmp).toUpperCase()}"
+                               oninput="setColHex(this)"></label>
+            </div>
+            <div class="cw-tip">${T('rgb_wheel_tip')}</div>
+          </div>
+        </div>
+      </div>` : ''}`;
   return `
     <div class="led-block">
       <div class="led-title">💡 ${T('led_link')}</div>
@@ -2703,6 +3064,7 @@ function renderLedBlock(ci){
         </select>
         ${extra}
       </div>
+      ${rgbRow}
     </div>`;
 }
 
@@ -3268,6 +3630,7 @@ function refreshUI(){
   /* 指派視窗開著的時候切語言 → 內容要一起換（它是動態產生的） */
   const asgOv = document.getElementById('asgOverlay');
   if(asgOv && asgOv.className.indexOf('open')>=0) renderAssign();
+  /* 顏色挑選器是內嵌的，renderCfg() 就會把它一起重繪，不必特別處理。 */
   const wStory = document.getElementById('w-story');
   if (wStory) wStory.textContent = T('w_story');
   document.getElementById('w-p').innerHTML=T('w_desc').replace('\n','<br>');
